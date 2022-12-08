@@ -5,10 +5,11 @@
   "function cellOwner(uint256) view returns (address)",
   "function cellType(uint256) view returns (uint8)",
   "function createCellERC20(address,uint256)",
+  "function createCellERC721(address,uint256)",
   "function getEthSignedMessageHash(bytes32) pure returns (bytes32)",
-  "function getMessageHash(address,uint256,string,uint256) pure returns (bytes32)",
+  "function getMessageHash(uint256,uint256) pure returns (bytes32)",
   "function recoverSigner(bytes32,bytes) pure returns (address)",
   "function splitSignature(bytes) pure returns (bytes32, bytes32, uint8)",
-  "function takeCellContentBySignature(uint256,bytes)",
-  "function verify(address,address,uint256,string,uint256,bytes) pure returns (bool)"
+  "function takeCellContentBySignature(uint256,uint256,bytes)",
+  "function verify(address,uint256,uint256,bytes) pure returns (bool)"
 ]

@@ -50,16 +50,28 @@ _Initializes the contract setting the deployer as the initial owner and the vari
 function createCellERC20(contract IERC20 _token, uint256 _amount) external
 ```
 
+### createCellERC721
+
+```solidity
+function createCellERC721(contract IERC721 _token, uint256 _erc721Id) external
+```
+
+### deleteCell
+
+```solidity
+function deleteCell(uint256 _cellId) internal
+```
+
 ### takeCellContentBySignature
 
 ```solidity
-function takeCellContentBySignature(uint256 _cellId, bytes _signature) external
+function takeCellContentBySignature(uint256 _cellId, uint256 _deadline, bytes _signature) external
 ```
 
 ### getMessageHash
 
 ```solidity
-function getMessageHash(address _to, uint256 _amount, string _message, uint256 _nonce) public pure returns (bytes32)
+function getMessageHash(uint256 _cellId, uint256 _deadline) public pure returns (bytes32)
 ```
 
 ### getEthSignedMessageHash
@@ -71,7 +83,7 @@ function getEthSignedMessageHash(bytes32 _messageHash) public pure returns (byte
 ### verify
 
 ```solidity
-function verify(address _signer, address _to, uint256 _amount, string _message, uint256 _nonce, bytes signature) public pure returns (bool)
+function verify(address _signer, uint256 _cellId, uint256 _deadline, bytes signature) public pure returns (bool)
 ```
 
 ### recoverSigner

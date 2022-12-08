@@ -3,6 +3,7 @@
 pragma solidity 0.8.17;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
 /**
@@ -39,29 +40,48 @@ contract Bank {
         cellId.increment();
 
         cellOwner[cellId.current()] = msg.sender;
-        cellAmount[cellId.current()] = _amount;
+        cellAmount[cellId.current()] = _amount; // ERC-20 token amount
         cellContract[cellId.current()] = address(_token);
         cellType[cellId.current()] = 1;
     }
 
-    function takeCellContentBySignature(uint256 _cellId, bytes memory _signature) external {
-        require(
-            verify(cellOwner[_cellId], msg.sender, cellAmount[_cellId], "message", 0, _signature) == true,
-            "Invalis signature"
-        );
+    function createCellERC721(IERC721 _token, uint256 _erc721Id) external {
+        _token.transferFrom(msg.sender, address(this), _erc721Id);
+        cellId.increment();
+
+        cellOwner[cellId.current()] = msg.sender;
+        cellAmount[cellId.current()] = _erc721Id; // ERC-721  - tokenID
+        cellContract[cellId.current()] = address(_token);
+        cellType[cellId.current()] = 2;
+    }
+
+    function deleteCell(uint256 _cellId) internal {
+        delete cellAmount[_cellId];
+        delete cellOwner[_cellId];
+        delete cellContract[_cellId];
+        delete cellType[_cellId];
+    }
+
+    function takeCellContentBySignature(
+        uint256 _cellId,
+        uint256 _deadline,
+        bytes memory _signature
+    ) external {
+        require(block.timestamp <= _deadline, "ExpiredSignature");
+        require(verify(cellOwner[_cellId], _cellId, _deadline, _signature) == true, "Invalid signature");
         if (cellType[_cellId] == 1) {
             IERC20(cellContract[_cellId]).transfer(msg.sender, cellAmount[_cellId]);
+            deleteCell(_cellId);
+        }
+        if (cellType[_cellId] == 2) {
+            IERC721(cellContract[_cellId]).transferFrom(address(this), msg.sender, cellAmount[_cellId]);
+            deleteCell(_cellId);
         }
     }
 
     // __________________ Signatures ____________________
-    function getMessageHash(
-        address _to,
-        uint256 _amount,
-        string memory _message,
-        uint256 _nonce
-    ) public pure returns (bytes32) {
-        return keccak256(abi.encodePacked(_to, _amount, _message, _nonce));
+    function getMessageHash(uint256 _cellId, uint256 _deadline) public pure returns (bytes32) {
+        return keccak256(abi.encodePacked(_cellId, _deadline));
     }
 
     function getEthSignedMessageHash(bytes32 _messageHash) public pure returns (bytes32) {
@@ -74,13 +94,11 @@ contract Bank {
 
     function verify(
         address _signer,
-        address _to,
-        uint256 _amount,
-        string memory _message,
-        uint256 _nonce,
+        uint256 _cellId,
+        uint256 _deadline,
         bytes memory signature
     ) public pure returns (bool) {
-        bytes32 messageHash = getMessageHash(_to, _amount, _message, _nonce);
+        bytes32 messageHash = getMessageHash(_cellId, _deadline);
         bytes32 ethSignedMessageHash = getEthSignedMessageHash(messageHash);
 
         return recoverSigner(ethSignedMessageHash, signature) == _signer;
