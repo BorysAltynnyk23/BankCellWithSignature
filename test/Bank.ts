@@ -98,4 +98,58 @@ describe("bank", function () {
             );
         });
     });
+    describe("ERC721 Signature", function () {
+        it("Cell can be collected by signature", async () => {
+            const NFT_ID = 1;
+
+            await erc721.mint(alice.address);
+            await erc721.connect(alice).approve(bank.address, NFT_ID);
+            await bank.connect(alice).createCellERC721(erc721.address, NFT_ID);
+
+            const cellId = 1;
+            const deadline = (await time.latest()) + 10000;
+            const messageHash = await bank.getMessageHash(cellId, deadline);
+            const signature = await alice.signMessage(ethers.utils.arrayify(messageHash));
+
+            await bank.connect(bob).takeCellContentBySignature(cellId, deadline, signature);
+
+            expect(await erc721.ownerOf(NFT_ID)).to.be.equal(bob.address);
+        });
+        it("Cell cannot be collected after deadline", async () => {
+            const NFT_ID = 1;
+
+            await erc721.mint(alice.address);
+            await erc721.connect(alice).approve(bank.address, NFT_ID);
+            await bank.connect(alice).createCellERC721(erc721.address, NFT_ID);
+
+            const cellId = 1;
+            const deadline = (await time.latest()) + 10000;
+            const messageHash = await bank.getMessageHash(cellId, deadline);
+            const signature = await alice.signMessage(ethers.utils.arrayify(messageHash));
+
+            await time.increase(10001);
+
+            await expect(bank.connect(bob).takeCellContentBySignature(cellId, deadline, signature)).to.be.revertedWith(
+                "ExpiredSignature"
+            );
+        });
+        it("Cell can be collected twice", async () => {
+            const NFT_ID = 1;
+
+            await erc721.mint(alice.address);
+            await erc721.connect(alice).approve(bank.address, NFT_ID);
+            await bank.connect(alice).createCellERC721(erc721.address, NFT_ID);
+
+            const cellId = 1;
+            const deadline = (await time.latest()) + 10000;
+            const messageHash = await bank.getMessageHash(cellId, deadline);
+            const signature = await alice.signMessage(ethers.utils.arrayify(messageHash));
+
+            await bank.connect(bob).takeCellContentBySignature(cellId, deadline, signature);
+
+            await expect(bank.connect(bob).takeCellContentBySignature(cellId, deadline, signature)).to.be.revertedWith(
+                "Invalid signature"
+            );
+        });
+    });
 });

@@ -71,12 +71,11 @@ contract Bank {
         require(verify(cellOwner[_cellId], _cellId, _deadline, _signature) == true, "Invalid signature");
         if (cellType[_cellId] == 1) {
             IERC20(cellContract[_cellId]).transfer(msg.sender, cellAmount[_cellId]);
-            deleteCell(_cellId);
         }
         if (cellType[_cellId] == 2) {
             IERC721(cellContract[_cellId]).transferFrom(address(this), msg.sender, cellAmount[_cellId]);
-            deleteCell(_cellId);
         }
+        deleteCell(_cellId);
     }
 
     // __________________ Signatures ____________________
