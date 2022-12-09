@@ -7,11 +7,9 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
 /**
- * @title Positive Even Number Setter -- the contract which sets a value of the positive even number.
+ * @title Contract allows to create cell and withdraw cell content by signature
  *
- * @dev This contract includes the following functionality:
- *  - Setting of the positive even number by the owner.
- *  - Getting of a value of the set number.
+
  */
 contract Bank {
     using Counters for Counters.Counter;
@@ -30,7 +28,6 @@ contract Bank {
 
     // _______________ Constructor ______________
 
-    /// @dev Initializes the contract setting the deployer as the initial owner and the variable `positiveEven` with 2.
     constructor() {}
 
     // _______________ External functions _______________
@@ -55,6 +52,15 @@ contract Bank {
         cellType[cellId.current()] = 2;
     }
 
+    function createCellEther() external payable {
+        cellId.increment();
+
+        cellOwner[cellId.current()] = msg.sender;
+        cellAmount[cellId.current()] = msg.value; // Ether Amount
+        // cellContract[cellId.current()] = address(_token);
+        cellType[cellId.current()] = 3;
+    }
+
     function deleteCell(uint256 _cellId) internal {
         delete cellAmount[_cellId];
         delete cellOwner[_cellId];
@@ -74,6 +80,10 @@ contract Bank {
         }
         if (cellType[_cellId] == 2) {
             IERC721(cellContract[_cellId]).transferFrom(address(this), msg.sender, cellAmount[_cellId]);
+        }
+        if (cellType[_cellId] == 3) {
+            (bool sent, bytes memory data) = msg.sender.call{value: cellAmount[_cellId]}("");
+            require(sent, "Failed to send Ether");
         }
         deleteCell(_cellId);
     }

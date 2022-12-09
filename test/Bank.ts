@@ -7,7 +7,7 @@ import { ethers } from "hardhat";
 import type { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 
 import { Bank, ERC20Mock, ERC721Mock } from "../typechain-types";
-import { utils } from "mocha";
+// import { utils } from "mocha";
 
 describe("bank", function () {
     let snapshotA: SnapshotRestorer;
@@ -98,6 +98,7 @@ describe("bank", function () {
             );
         });
     });
+
     describe("ERC721 Signature", function () {
         it("Cell can be collected by signature", async () => {
             const NFT_ID = 1;
@@ -150,6 +151,41 @@ describe("bank", function () {
             await expect(bank.connect(bob).takeCellContentBySignature(cellId, deadline, signature)).to.be.revertedWith(
                 "Invalid signature"
             );
+        });
+    });
+
+    describe("Ether Signature", function () {
+        it("Cell can be collected by signature", async () => {
+            await bank.connect(alice).createCellEther({ value: ethers.utils.parseEther("1") });
+
+            const cellId = 1;
+            const deadline = (await time.latest()) + 10000;
+            const messageHash = await bank.getMessageHash(cellId, deadline);
+            const signature = await alice.signMessage(ethers.utils.arrayify(messageHash));
+
+            const ethBalanceBefore = await bob.getBalance();
+
+            await bank.connect(bob).takeCellContentBySignature(cellId, deadline, signature);
+
+            const ethBalanceAfter = await bob.getBalance();
+
+            expect(ethBalanceAfter.sub(ethBalanceBefore)).to.be.gt(ethers.utils.parseEther("1").mul(99).div(100));
+        });
+        it("User can collect his own cell by signature", async () => {
+            await bank.connect(alice).createCellEther({ value: ethers.utils.parseEther("1") });
+
+            const cellId = 1;
+            const deadline = (await time.latest()) + 10000;
+            const messageHash = await bank.getMessageHash(cellId, deadline);
+            const signature = await alice.signMessage(ethers.utils.arrayify(messageHash));
+
+            const ethBalanceBefore = await alice.getBalance();
+
+            await bank.connect(alice).takeCellContentBySignature(cellId, deadline, signature);
+
+            const ethBalanceAfter = await alice.getBalance();
+
+            expect(ethBalanceAfter.sub(ethBalanceBefore)).to.be.gt(ethers.utils.parseEther("1").mul(99).div(100));
         });
     });
 });

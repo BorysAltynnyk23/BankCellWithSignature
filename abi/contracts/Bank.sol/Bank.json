@@ -6,6 +6,7 @@
   "function cellType(uint256) view returns (uint8)",
   "function createCellERC20(address,uint256)",
   "function createCellERC721(address,uint256)",
+  "function createCellEther() payable",
   "function getEthSignedMessageHash(bytes32) pure returns (bytes32)",
   "function getMessageHash(uint256,uint256) pure returns (bytes32)",
   "function recoverSigner(bytes32,bytes) pure returns (address)",

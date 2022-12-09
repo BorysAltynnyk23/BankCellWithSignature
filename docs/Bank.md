@@ -2,10 +2,6 @@
 
 ## Bank
 
-_This contract includes the following functionality:
- - Setting of the positive even number by the owner.
- - Getting of a value of the set number._
-
 ### cellId
 
 ```solidity
@@ -42,8 +38,6 @@ mapping(uint256 => uint8) cellType
 constructor() public
 ```
 
-_Initializes the contract setting the deployer as the initial owner and the variable `positiveEven` with 2._
-
 ### createCellERC20
 
 ```solidity
@@ -54,6 +48,12 @@ function createCellERC20(contract IERC20 _token, uint256 _amount) external
 
 ```solidity
 function createCellERC721(contract IERC721 _token, uint256 _erc721Id) external
+```
+
+### createCellEther
+
+```solidity
+function createCellEther() external payable
 ```
 
 ### deleteCell

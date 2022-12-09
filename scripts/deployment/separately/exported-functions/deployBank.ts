@@ -3,9 +3,9 @@
 import hre from "hardhat";
 const ethers = hre.ethers;
 
-import type { PositiveEvenSetter } from "../../../../typechain-types";
+import type { Bank } from "../../../../typechain-types";
 
-async function deployPositiveEvenSetter(): Promise<PositiveEvenSetter> {
+async function deployBank(): Promise<Bank> {
     /*
      * Hardhat always runs the compile task when running scripts with its command line interface.
      *
@@ -17,22 +17,22 @@ async function deployPositiveEvenSetter(): Promise<PositiveEvenSetter> {
     const [deployer] = await ethers.getSigners();
 
     // Deployment.
-    const PositiveEvenSetter = (await ethers.getContractFactory("PositiveEvenSetter")).connect(deployer);
-    const positiveEvenSetter: PositiveEvenSetter = await PositiveEvenSetter.deploy();
+    const Bank = (await ethers.getContractFactory("Bank")).connect(deployer);
+    const bank: Bank = await Bank.deploy();
 
-    await positiveEvenSetter.deployed();
+    await bank.deployed();
 
-    console.log(`\`positiveEvenSetter\` is deployed to ${positiveEvenSetter.address}.`);
+    console.log(`\`bank\` is deployed to ${bank.address}.`);
 
     // Verification of the deployed contract.
     if (hre.network.name !== "hardhat" && hre.network.name !== "localhost") {
         console.log("Sleeping before verification...");
         await new Promise((resolve) => setTimeout(resolve, 60000)); // 60 seconds.
 
-        await hre.run("verify:verify", { address: positiveEvenSetter.address, constructorArguments: [] });
+        await hre.run("verify:verify", { address: bank.address, constructorArguments: [] });
     }
 
-    return positiveEvenSetter;
+    return bank;
 }
 
-export { deployPositiveEvenSetter };
+export { deployBank };
