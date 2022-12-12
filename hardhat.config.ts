@@ -49,8 +49,11 @@ const ETHEREUM_TESTNET_KEYS: string[] = process.env.ETHEREUM_TESTNET_KEYS ?
 // See `config.networks`.
 // const POLYGON_MAINNET_KEYS: string[] = process.env.POLYGON_MAINNET_KEYS ?
 //     process.env.POLYGON_MAINNET_KEYS.split(",") : [];
-// const POLYGON_TESTNET_KEYS: string[] = process.env.POLYGON_TESTNET_KEYS ?
-//     process.env.POLYGON_TESTNET_KEYS.split(",") : [];
+const POLYGON_TESTNET_KEYS: string[] = process.env.POLYGON_TESTNET_KEYS
+    ? process.env.POLYGON_TESTNET_KEYS.split(",")
+    : [];
+
+const POLYGONSCAN_API_KEY: string = process.env.POLYGONSCAN_API_KEY ? process.env.POLYGONSCAN_API_KEY : "";
 
 /*
  * The solc compiler optimizer configuration. (The optimizer is disabled by default).
@@ -106,7 +109,7 @@ const config: HardhatUserConfig = {
             forking: {
                 url: process.env.FORKING_URL || "",
                 enabled: process.env.FORKING !== undefined
-            }//,
+            } //,
             /*
              * Uncomment the line below if Ethers reports the error
              * "Error: cannot estimate gas; transaction may fail or may require manual gas limit...".
@@ -127,17 +130,17 @@ const config: HardhatUserConfig = {
         sepolia: {
             url: process.env.SEPOLIA_URL || "",
             accounts: [...ETHEREUM_TESTNET_KEYS]
-        } //,
+        },
         // // Polygon.
         // // Example of adding of other networks.
         // polygon: {
         //     url: process.env.POLYGON_URL || "",
         //     accounts: [...POLYGON_MAINNET_KEYS]
         // },
-        // mumbai: {
-        //     url:  process.env.MUMBAI_URL || "",
-        //     accounts: [...POLYGON_TESTNET_KEYS]
-        // }
+        mumbai: {
+            url: process.env.MUMBAI_URL || "",
+            accounts: [...POLYGON_TESTNET_KEYS]
+        }
     },
     contractSizer: {
         except: ["mocks/", "from-dependencies/"]
@@ -161,7 +164,8 @@ const config: HardhatUserConfig = {
         outputFile: process.env.GAS_REPORT_TO_FILE ? "gas-report.txt" : undefined
     },
     etherscan: {
-        apiKey: process.env.ETHERSCAN_API_KEY
+        // apiKey: process.env.ETHERSCAN_API_KEY,
+
         /*
          * If the project targets multiple EVM-compatible networks that have different explorers, then it is necessary
          * to set multiple API keys.
@@ -173,13 +177,13 @@ const config: HardhatUserConfig = {
          * See the link for details:
          * https://hardhat.org/hardhat-runner/plugins/nomiclabs-hardhat-etherscan#multiple-api-keys-and-alternative-block-explorers.
          */
-        // apiKey: {
-        //     mainnet: "ETHERSCAN_API_KEY",
-        //     goerli: "ETHERSCAN_API_KEY",
-        //     sepolia: "ETHERSCAN_API_KEY",
-        //     polygon: "POLYGONSCAN_API_KEY",
-        //     polygonMumbai: "POLYGONSCAN_API_KEY"
-        // }
+        apiKey: {
+            // mainnet: "ETHERSCAN_API_KEY",
+            // goerli: "ETHERSCAN_API_KEY",
+            // sepolia: "ETHERSCAN_API_KEY",
+            // polygon: "POLYGONSCAN_API_KEY",
+            polygonMumbai: POLYGONSCAN_API_KEY
+        }
     },
     abiExporter: {
         pretty: true,
@@ -195,7 +199,7 @@ const config: HardhatUserConfig = {
             // "@openzeppelin/contracts/token/ERC20/presets/ERC20PresetMinterPauser.sol",
             // "@openzeppelin/contracts/token/ERC20/presets/ERC20PresetFixedSupply.sol"
         ],
-        path: "./from-dependencies"//,
+        path: "./from-dependencies" //,
         /*
          * Required for Slither if something in `paths`. It is to keep temporary file directory after compilation is
          * complete.
