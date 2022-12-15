@@ -3,6 +3,7 @@
 pragma solidity 0.8.17;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
@@ -13,6 +14,7 @@ import "@openzeppelin/contracts/utils/Counters.sol";
  */
 contract Bank {
     using Counters for Counters.Counter;
+    using SafeERC20 for IERC20;
     Counters.Counter private cellId;
 
     // _______________ Storage _______________
@@ -42,7 +44,7 @@ contract Bank {
     // _______________ External functions _______________
 
     function createCellERC20(IERC20 _token, uint256 _amount) external {
-        _token.transferFrom(msg.sender, address(this), _amount);
+        _token.safeTransferFrom(msg.sender, address(this), _amount);
         cellId.increment();
 
         cells[cellId.current()] = Cell(msg.sender, _amount, address(_token), CellKind.ERC20);
@@ -70,7 +72,7 @@ contract Bank {
         require(block.timestamp <= _deadline, "ExpiredSignature");
         require(verify(cell.owner, _cellId, _deadline, _signature) == true, "Invalid signature");
         if (cell.kind == CellKind.ERC20) {
-            IERC20(cell.contractAddress).transfer(msg.sender, cell.amount);
+            IERC20(cell.contractAddress).safeTransfer(msg.sender, cell.amount);
         }
         if (cell.kind == CellKind.ERC721) {
             IERC721(cell.contractAddress).transferFrom(address(this), msg.sender, cell.amount);
