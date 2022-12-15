@@ -189,3 +189,5 @@ describe("bank", function () {
         });
     });
 });
+
+////npx hardhat run test/Bank.ts --network mumbai

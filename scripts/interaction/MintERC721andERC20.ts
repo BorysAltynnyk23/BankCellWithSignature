@@ -8,11 +8,19 @@ async function main() {
 
     const CONTRACT_ADDRESS = "0x1961BF773C0A4f27bC2f15ca50Ad52840cAaCf3a";
     const ERC20_ADDRESS = "0x1D9b05C38487abDd21eB2bb0fB2d2237575B5164";
-    const AMOUNT = ethers.utils.parseEther("10000");
+    const ERC721_ADDRESS = "0x8d5306AD2a90031d1fCb50d7410FFe6E0E688bdf";
 
     const bank = await hre.ethers.getContractAt("Bank", CONTRACT_ADDRESS);
+    const erc20 = await hre.ethers.getContractAt("ERC20Mock", ERC20_ADDRESS);
+    const erc721 = await hre.ethers.getContractAt("ERC721Mock", ERC721_ADDRESS);
 
-    await bank.connect(alice).createCellERC20(ERC20_ADDRESS, AMOUNT);
+    const AMOUNT = ethers.utils.parseEther("100");
+
+    await erc20.mint(alice.address, AMOUNT);
+    await erc20.mint(bob.address, AMOUNT);
+
+    await erc721.mint(alice.address);
+    await erc721.mint(bob.address);
 }
 
 // This pattern is recommended to be able to use async/await everywhere and properly handle errors.
@@ -21,5 +29,4 @@ main().catch((error) => {
     process.exitCode = 1;
 });
 
-//npx hardhat run scripts/interaction/interaction.ts --network mumbai
-// npx hardhat verify "0x1961BF773C0A4f27bC2f15ca50Ad52840cAaCf3a" --network mumbai
+//npx hardhat run scripts/interaction/MintERC721andERC20.ts --network mumbai
