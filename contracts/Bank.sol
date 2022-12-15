@@ -16,11 +16,20 @@ contract Bank {
     Counters.Counter private cellId;
 
     // _______________ Storage _______________
+    enum CellKind {
+        ERC20,
+        ERC721,
+        Ether
+    }
 
-    mapping(uint256 => uint256) public cellAmount;
-    mapping(uint256 => address) public cellOwner;
-    mapping(uint256 => address) public cellContract; // contract of cell content
-    mapping(uint256 => uint8) public cellType; // 1 - ERC20, 2 - ERC721, 3 - Ether
+    struct Cell {
+        address owner;
+        uint256 amount;
+        address contractAddress;
+        CellKind kind;
+    }
+
+    mapping(uint256 => Cell) public cells;
 
     // _______________ Errors _______________
 
@@ -36,36 +45,20 @@ contract Bank {
         _token.transferFrom(msg.sender, address(this), _amount);
         cellId.increment();
 
-        cellOwner[cellId.current()] = msg.sender;
-        cellAmount[cellId.current()] = _amount; // ERC-20 token amount
-        cellContract[cellId.current()] = address(_token);
-        cellType[cellId.current()] = 1;
+        cells[cellId.current()] = Cell(msg.sender, _amount, address(_token), CellKind.ERC20);
     }
 
     function createCellERC721(IERC721 _token, uint256 _erc721Id) external {
         _token.transferFrom(msg.sender, address(this), _erc721Id);
         cellId.increment();
 
-        cellOwner[cellId.current()] = msg.sender;
-        cellAmount[cellId.current()] = _erc721Id; // ERC-721  - tokenID
-        cellContract[cellId.current()] = address(_token);
-        cellType[cellId.current()] = 2;
+        cells[cellId.current()] = Cell(msg.sender, _erc721Id, address(_token), CellKind.ERC721);
     }
 
     function createCellEther() external payable {
         cellId.increment();
 
-        cellOwner[cellId.current()] = msg.sender;
-        cellAmount[cellId.current()] = msg.value; // Ether Amount
-        // cellContract[cellId.current()] = address(_token);
-        cellType[cellId.current()] = 3;
-    }
-
-    function deleteCell(uint256 _cellId) internal {
-        delete cellAmount[_cellId];
-        delete cellOwner[_cellId];
-        delete cellContract[_cellId];
-        delete cellType[_cellId];
+        cells[cellId.current()] = Cell(msg.sender, msg.value, address(0), CellKind.Ether);
     }
 
     function takeCellContentBySignature(
@@ -73,24 +66,29 @@ contract Bank {
         uint256 _deadline,
         bytes memory _signature
     ) external {
+        Cell memory cell = cells[_cellId];
         require(block.timestamp <= _deadline, "ExpiredSignature");
-        require(verify(cellOwner[_cellId], _cellId, _deadline, _signature) == true, "Invalid signature");
-        if (cellType[_cellId] == 1) {
-            IERC20(cellContract[_cellId]).transfer(msg.sender, cellAmount[_cellId]);
+        require(verify(cell.owner, _cellId, _deadline, _signature) == true, "Invalid signature");
+        if (cell.kind == CellKind.ERC20) {
+            IERC20(cell.contractAddress).transfer(msg.sender, cell.amount);
         }
-        if (cellType[_cellId] == 2) {
-            IERC721(cellContract[_cellId]).transferFrom(address(this), msg.sender, cellAmount[_cellId]);
+        if (cell.kind == CellKind.ERC721) {
+            IERC721(cell.contractAddress).transferFrom(address(this), msg.sender, cell.amount);
         }
-        if (cellType[_cellId] == 3) {
-            (bool sent, bytes memory data) = msg.sender.call{value: cellAmount[_cellId]}("");
+        if (cell.kind == CellKind.Ether) {
+            (bool sent, bytes memory data) = msg.sender.call{value: cell.amount}("");
             require(sent, "Failed to send Ether");
         }
-        deleteCell(_cellId);
+        delete cells[_cellId];
     }
 
     // __________________ Signatures ____________________
-    function getMessageHash(uint256 _cellId, uint256 _deadline) public pure returns (bytes32) {
-        return keccak256(abi.encodePacked(_cellId, _deadline));
+    function getMessageHash(
+        uint256 _cellId,
+        address _confidant,
+        uint256 _deadline
+    ) public pure returns (bytes32) {
+        return keccak256(abi.encodePacked(_cellId, _confidant, _deadline));
     }
 
     function getEthSignedMessageHash(bytes32 _messageHash) public pure returns (bytes32) {
@@ -106,8 +104,8 @@ contract Bank {
         uint256 _cellId,
         uint256 _deadline,
         bytes memory signature
-    ) public pure returns (bool) {
-        bytes32 messageHash = getMessageHash(_cellId, _deadline);
+    ) public returns (bool) {
+        bytes32 messageHash = getMessageHash(_cellId, msg.sender, _deadline);
         bytes32 ethSignedMessageHash = getEthSignedMessageHash(messageHash);
 
         return recoverSigner(ethSignedMessageHash, signature) == _signer;

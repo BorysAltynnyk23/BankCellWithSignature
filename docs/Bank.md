@@ -8,28 +8,31 @@
 struct Counters.Counter cellId
 ```
 
-### cellAmount
+### CellKind
 
 ```solidity
-mapping(uint256 => uint256) cellAmount
+enum CellKind {
+  ERC20,
+  ERC721,
+  Ether
+}
 ```
 
-### cellOwner
+### Cell
 
 ```solidity
-mapping(uint256 => address) cellOwner
+struct Cell {
+  address owner;
+  uint256 amount;
+  address contractAddress;
+  enum Bank.CellKind kind;
+}
 ```
 
-### cellContract
+### cells
 
 ```solidity
-mapping(uint256 => address) cellContract
-```
-
-### cellType
-
-```solidity
-mapping(uint256 => uint8) cellType
+mapping(uint256 => struct Bank.Cell) cells
 ```
 
 ### constructor
@@ -56,12 +59,6 @@ function createCellERC721(contract IERC721 _token, uint256 _erc721Id) external
 function createCellEther() external payable
 ```
 
-### deleteCell
-
-```solidity
-function deleteCell(uint256 _cellId) internal
-```
-
 ### takeCellContentBySignature
 
 ```solidity
@@ -71,7 +68,7 @@ function takeCellContentBySignature(uint256 _cellId, uint256 _deadline, bytes _s
 ### getMessageHash
 
 ```solidity
-function getMessageHash(uint256 _cellId, uint256 _deadline) public pure returns (bytes32)
+function getMessageHash(uint256 _cellId, address _confidant, uint256 _deadline) public pure returns (bytes32)
 ```
 
 ### getEthSignedMessageHash
@@ -83,7 +80,7 @@ function getEthSignedMessageHash(bytes32 _messageHash) public pure returns (byte
 ### verify
 
 ```solidity
-function verify(address _signer, uint256 _cellId, uint256 _deadline, bytes signature) public pure returns (bool)
+function verify(address _signer, uint256 _cellId, uint256 _deadline, bytes signature) public returns (bool)
 ```
 
 ### recoverSigner

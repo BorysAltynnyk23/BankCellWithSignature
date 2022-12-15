@@ -51,8 +51,9 @@ describe("bank", function () {
 
             const cellId = 1;
             const deadline = (await time.latest()) + 10000;
+            const confidant = bob.address;
 
-            const messageHash = await bank.getMessageHash(cellId, deadline);
+            const messageHash = await bank.getMessageHash(cellId, confidant, deadline);
             const signature = await alice.signMessage(ethers.utils.arrayify(messageHash));
 
             await bank.connect(bob).takeCellContentBySignature(cellId, deadline, signature);
@@ -68,8 +69,9 @@ describe("bank", function () {
 
             const cellId = 1;
             const deadline = (await time.latest()) + 10000;
+            const confidant = bob.address;
 
-            const messageHash = await bank.getMessageHash(cellId, deadline);
+            const messageHash = await bank.getMessageHash(cellId, confidant, deadline);
             const signature = await alice.signMessage(ethers.utils.arrayify(messageHash));
 
             await time.increase(10001);
@@ -88,8 +90,9 @@ describe("bank", function () {
 
             const cellId = 1;
             const deadline = (await time.latest()) + 10000;
+            const confidant = bob.address;
 
-            const messageHash = await bank.getMessageHash(cellId, deadline);
+            const messageHash = await bank.getMessageHash(cellId, confidant, deadline);
             const signature = await alice.signMessage(ethers.utils.arrayify(messageHash));
 
             await bank.connect(bob).takeCellContentBySignature(cellId, deadline, signature);
@@ -98,7 +101,6 @@ describe("bank", function () {
             );
         });
     });
-
     describe("ERC721 Signature", function () {
         it("Cell can be collected by signature", async () => {
             const NFT_ID = 1;
@@ -109,7 +111,9 @@ describe("bank", function () {
 
             const cellId = 1;
             const deadline = (await time.latest()) + 10000;
-            const messageHash = await bank.getMessageHash(cellId, deadline);
+            const confidant = bob.address;
+
+            const messageHash = await bank.getMessageHash(cellId, confidant, deadline);
             const signature = await alice.signMessage(ethers.utils.arrayify(messageHash));
 
             await bank.connect(bob).takeCellContentBySignature(cellId, deadline, signature);
@@ -125,7 +129,9 @@ describe("bank", function () {
 
             const cellId = 1;
             const deadline = (await time.latest()) + 10000;
-            const messageHash = await bank.getMessageHash(cellId, deadline);
+            const confidant = bob.address;
+
+            const messageHash = await bank.getMessageHash(cellId, confidant, deadline);
             const signature = await alice.signMessage(ethers.utils.arrayify(messageHash));
 
             await time.increase(10001);
@@ -143,7 +149,9 @@ describe("bank", function () {
 
             const cellId = 1;
             const deadline = (await time.latest()) + 10000;
-            const messageHash = await bank.getMessageHash(cellId, deadline);
+            const confidant = bob.address;
+
+            const messageHash = await bank.getMessageHash(cellId, confidant, deadline);
             const signature = await alice.signMessage(ethers.utils.arrayify(messageHash));
 
             await bank.connect(bob).takeCellContentBySignature(cellId, deadline, signature);
@@ -153,14 +161,15 @@ describe("bank", function () {
             );
         });
     });
-
     describe("Ether Signature", function () {
         it("Cell can be collected by signature", async () => {
             await bank.connect(alice).createCellEther({ value: ethers.utils.parseEther("1") });
 
             const cellId = 1;
             const deadline = (await time.latest()) + 10000;
-            const messageHash = await bank.getMessageHash(cellId, deadline);
+            const confidant = bob.address;
+
+            const messageHash = await bank.getMessageHash(cellId, confidant, deadline);
             const signature = await alice.signMessage(ethers.utils.arrayify(messageHash));
 
             const ethBalanceBefore = await bob.getBalance();
@@ -176,7 +185,9 @@ describe("bank", function () {
 
             const cellId = 1;
             const deadline = (await time.latest()) + 10000;
-            const messageHash = await bank.getMessageHash(cellId, deadline);
+            const confidant = alice.address;
+
+            const messageHash = await bank.getMessageHash(cellId, confidant, deadline);
             const signature = await alice.signMessage(ethers.utils.arrayify(messageHash));
 
             const ethBalanceBefore = await alice.getBalance();
