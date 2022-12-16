@@ -1,5 +1,7 @@
 [
   "constructor()",
+  "event CellCreated(uint256)",
+  "event CellDeleted(uint256)",
   "function cells(uint256) view returns (address, uint256, address, uint8)",
   "function createCellERC20(address,uint256)",
   "function createCellERC721(address,uint256)",

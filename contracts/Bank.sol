@@ -36,6 +36,8 @@ contract Bank {
     // _______________ Errors _______________
 
     // _______________ Events _______________
+    event CellCreated(uint256 _cellId);
+    event CellDeleted(uint256 _cellId);
 
     // _______________ Constructor ______________
 
@@ -48,6 +50,8 @@ contract Bank {
         cellId.increment();
 
         cells[cellId.current()] = Cell(msg.sender, _amount, address(_token), CellKind.ERC20);
+
+        emit CellCreated(cellId.current());
     }
 
     function createCellERC721(IERC721 _token, uint256 _erc721Id) external {
@@ -55,12 +59,16 @@ contract Bank {
         cellId.increment();
 
         cells[cellId.current()] = Cell(msg.sender, _erc721Id, address(_token), CellKind.ERC721);
+
+        emit CellCreated(cellId.current());
     }
 
     function createCellEther() external payable {
         cellId.increment();
 
         cells[cellId.current()] = Cell(msg.sender, msg.value, address(0), CellKind.Ether);
+
+        emit CellCreated(cellId.current());
     }
 
     function takeCellContentBySignature(
@@ -71,6 +79,9 @@ contract Bank {
         Cell memory cell = cells[_cellId];
         require(block.timestamp <= _deadline, "ExpiredSignature");
         require(verify(cell.owner, _cellId, _deadline, _signature) == true, "Invalid signature");
+
+        delete cells[_cellId];
+
         if (cell.kind == CellKind.ERC20) {
             IERC20(cell.contractAddress).safeTransfer(msg.sender, cell.amount);
         }
@@ -81,7 +92,8 @@ contract Bank {
             (bool sent, bytes memory data) = msg.sender.call{value: cell.amount}("");
             require(sent, "Failed to send Ether");
         }
-        delete cells[_cellId];
+
+        emit CellDeleted(_cellId);
     }
 
     // __________________ Signatures ____________________

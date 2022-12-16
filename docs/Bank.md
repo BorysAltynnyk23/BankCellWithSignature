@@ -35,6 +35,18 @@ struct Cell {
 mapping(uint256 => struct Bank.Cell) cells
 ```
 
+### CellCreated
+
+```solidity
+event CellCreated(uint256 _cellId)
+```
+
+### CellDeleted
+
+```solidity
+event CellDeleted(uint256 _cellId)
+```
+
 ### constructor
 
 ```solidity

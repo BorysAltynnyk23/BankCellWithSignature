@@ -12,7 +12,8 @@ async function main() {
 
     const bank = await hre.ethers.getContractAt("Bank", CONTRACT_ADDRESS);
 
-    await bank.connect(alice).createCellERC20(ERC20_ADDRESS, AMOUNT);
+    const x = await ethers.provider.getBlock("latest");
+    console.log(x.timestamp);
 }
 
 // This pattern is recommended to be able to use async/await everywhere and properly handle errors.
@@ -22,4 +23,3 @@ main().catch((error) => {
 });
 
 //npx hardhat run scripts/interaction/interaction.ts --network mumbai
-// npx hardhat verify "0x1961BF773C0A4f27bC2f15ca50Ad52840cAaCf3a" --network mumbai
