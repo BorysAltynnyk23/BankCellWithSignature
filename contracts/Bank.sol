@@ -10,7 +10,6 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 /**
  * @title Contract allows to create cell and withdraw cell content by signature
  *
-
  */
 contract Bank {
     using Counters for Counters.Counter;
@@ -31,6 +30,7 @@ contract Bank {
         CellKind kind;
     }
 
+    /// @notice cell id to cell content
     mapping(uint256 => Cell) public cells;
 
     // _______________ Errors _______________
@@ -44,7 +44,9 @@ contract Bank {
     constructor() {}
 
     // _______________ External functions _______________
-
+    /// @notice Create cell with ERC20 token
+    /// @param _token Address of ERC20 token contract user want to deposit to the cell
+    /// @param _amount Amount of ERC20 token user want to deposit to the cell
     function createCellERC20(IERC20 _token, uint256 _amount) external {
         _token.safeTransferFrom(msg.sender, address(this), _amount);
         cellId.increment();
@@ -54,6 +56,9 @@ contract Bank {
         emit CellCreated(cellId.current());
     }
 
+    /// @notice Create cell with ERC721 token
+    /// @param _token Address of ERC721 token contract user want to deposit to the cell
+    /// @param _erc721Id Id of ERC721 token user want to deposit to the cell
     function createCellERC721(IERC721 _token, uint256 _erc721Id) external {
         _token.transferFrom(msg.sender, address(this), _erc721Id);
         cellId.increment();
@@ -63,6 +68,8 @@ contract Bank {
         emit CellCreated(cellId.current());
     }
 
+    /// @notice Create cell with Ethereum
+    /// @dev Ether should be sent with transaction
     function createCellEther() external payable {
         cellId.increment();
 
@@ -71,6 +78,10 @@ contract Bank {
         emit CellCreated(cellId.current());
     }
 
+    /// @notice Send cell content to caller by signature
+    /// @param _cellId Id of the cell
+    /// @param _deadline Deadline after wich signature is invalid
+    /// @param _signature Signature to prove that caller are the one who is in signature
     function takeCellContentBySignature(
         uint256 _cellId,
         uint256 _deadline,
@@ -96,7 +107,12 @@ contract Bank {
         emit CellDeleted(_cellId);
     }
 
-    // __________________ Signatures ____________________
+    // __________________ Signature ____________________
+    /// @notice Create hash of the message
+    /// @param _cellId Id of the cell
+    /// @param _confidant The user that will be allowed to collect cell content
+    /// @param _deadline The time after wich signature is not valid
+    /// @return Hashed message
     function getMessageHash(
         uint256 _cellId,
         address _confidant,
@@ -105,6 +121,8 @@ contract Bank {
         return keccak256(abi.encodePacked(_cellId, _confidant, _deadline));
     }
 
+    /// @notice Hash the messageHash in Ethereum format
+    /// @return Hashed message in Ethereum format
     function getEthSignedMessageHash(bytes32 _messageHash) public pure returns (bytes32) {
         /*
         Signature is produced by signing a keccak256 hash with the following format:
@@ -113,6 +131,10 @@ contract Bank {
         return keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", _messageHash));
     }
 
+    /// @notice Verify that message is signed by the signer
+    /// @param _signer User that signed the message
+    /// @param _cellId Id of cell from the message
+    /// @param _deadline Signature deadline
     function verify(
         address _signer,
         uint256 _cellId,

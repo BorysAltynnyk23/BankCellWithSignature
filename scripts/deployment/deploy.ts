@@ -14,4 +14,4 @@ main().catch((error) => {
 });
 
 //npx hardhat run scripts/deployment/deploy.ts --network mumbai
-// npx hardhat verify "0x1961BF773C0A4f27bC2f15ca50Ad52840cAaCf3a" --network mumbai
+// npx hardhat verify "0x60A76a22B77c5Dd5395E02297C2957B21f845aC9" --network mumbai

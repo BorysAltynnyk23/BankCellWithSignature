@@ -12,8 +12,8 @@ async function main() {
 
     const bank = await hre.ethers.getContractAt("Bank", CONTRACT_ADDRESS);
 
-    const x = await ethers.provider.getBlock("latest");
-    console.log(x.timestamp);
+    // const x = await ethers.provider.getBlock("latest");
+    // console.log(x.timestamp);
 }
 
 // This pattern is recommended to be able to use async/await everywhere and properly handle errors.
