@@ -48,6 +48,7 @@ contract Bank {
     /// @param _token Address of ERC20 token contract user want to deposit to the cell
     /// @param _amount Amount of ERC20 token user want to deposit to the cell
     function createCellERC20(IERC20 _token, uint256 _amount) external {
+        require(_amount != 0, "Amount of token cannot be zero");
         _token.safeTransferFrom(msg.sender, address(this), _amount);
         cellId.increment();
 
